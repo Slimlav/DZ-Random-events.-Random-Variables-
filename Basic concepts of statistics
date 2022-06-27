@@ -1,0 +1,34 @@
+import pandas as pd
+import numpy as np
+
+horse_data = pd.read_csv('horse_data.csv')
+horse_data.columns=["surgery?","Age","Hospital Number","rectal temperature","pulse","respiratory rate","temperature of extremities","peripheral pulse","mucous membranes","capillary refill time","pain","peristalsis","abdominal distension","nasogastric tube","nasogastric reflux","nasogastric reflux PH","rectal examination","abdomen","packed cell volume","total protein","abdominocentesis appearance","abdomcentesis total protein","outcome","surgical lesion?","first number is site of lesion","second number is type","third number is subtype","cp_data"]
+study_of = horse_data[["surgery?", "Age", "rectal temperature", "pulse", "respiratory rate", "temperature of extremities", "pain", "outcome"]]
+study = study_of.replace('?', np.nan)
+
+study_ = study.astype(float)
+study_.describe()
+
+lower_bound = study_.quantile(q=0.1)
+upper_bound = study_.quantile(q=0.9)
+study_[(study_ < lower_bound) | (study_ > upper_bound)]
+
+study_.isnull().sum()
+
+ study_["surgery?"].fillna(study_["surgery?"].median(), inplace=True) 
+ #вариация значений маленькая, подставляю значение median
+ study_["rectal temperature"].fillna(study_["rectal temperature"].mean(), inplace=True)
+ #большинство значений сгрупировано в одном периоде значений, выбираю mean
+ study_["pulse"].fillna(study_["pulse"].median(), inplace=True) 
+ #большой разброс значений,в каждом периоде, выбираю median
+ study_["respiratory rate"].fillna(study_["respiratory rate"].median(), inplace=True) 
+ #большой разброс значений,в каждом периоде, выбираю median
+ study_["temperature of extremities"].fillna(study_["temperature of extremities"].median(), inplace=True)
+ #выбор значения из 4 значений, выбираем целое популярное
+ study_["pain"].fillna(study_["pain"].median(), inplace=True)  
+ # среднее значение приблизительно равно значению медианы
+ study_["outcome"].fillna(study_["outcome"].median(), inplace=True)
+ #вариация значений маленькая, подставляю значение median 
+ study_.head(50)
+ 
+ study_.isnull().sum()
