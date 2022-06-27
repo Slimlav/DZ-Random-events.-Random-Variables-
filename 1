@@ -1,0 +1,30 @@
+import random
+
+tries = 0
+damage = 1
+win = 0
+loss = 0
+while tries !=1000000:
+   tries += damage
+   slots = ''.join(["%s" % random.randint(0, 9) for num in range(0,3)])
+   if int(slots) == int(slots)//10:
+        win += 1
+   if int(slots) == int(slots)//100:
+        win += 2
+   if int(slots) == int(slots)//7:
+        win += 3
+   if int(slots) == int(slots)//77:
+        win += 5 
+   if slots == "111":
+        win += 10
+   if slots == "333":
+        win += 15
+   if slots == "555":
+        win += 50
+   if slots == "999":
+        win += 100
+   if slots == "777":
+        win += 200
+   else:   
+        loss += 1
+print("Выиграл: ", win, "Проиграл: ", loss)
