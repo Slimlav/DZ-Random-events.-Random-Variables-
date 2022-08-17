@@ -1,19 +1,26 @@
-Получите данные и загрузите их в рабочую среду.
+#Получите данные и загрузите их в рабочую среду.
 
 import numpy as np
 import pandas as pd
 import scipy.stats
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import make_pipeline 
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+import seaborn as sns
+from sklearn.svm import SVC
 
 data = pd.read_csv('Dataset.csv',sep = ' ',names = ['Age','Workclass','ID','Education','Education-num','Marital-status','Occupation','Relationship','Race','Sex','Capital-gain','Capital-loss','Hours-per-week','Native-country','Class'])
 data.head()
 
-Проведите первичный анализ.
+#Проведите первичный анализ.
 
 data.info()
 data.describe()
 
-Проверьте данные на пропуски. Удалите в случае обнаружения.Предложите альтернативный способ работы с пропусками
+#Проверьте данные на пропуски. Удалите в случае обнаружения.Предложите альтернативный способ работы с пропусками
 
 data.columns
 data['Workclass'].value_counts()
@@ -24,8 +31,8 @@ df = data.replace({'Workclass' : { '?' : 'Private'},'Native-country': { '?' : 'U
 df.drop(df.index[df['Occupation'] == '?'], inplace = True)
 df.head()
 
-Постройте 1-2 графика на выбор. Визуализация должна быть основана на исследуемых данных и быть полезной (из графика можно сделать вывод об особенностях датасета/класса/признака)
-import seaborn as sns
+#Постройте 1-2 графика на выбор. Визуализация должна быть основана на исследуемых данных и быть полезной (из графика можно сделать вывод об особенностях датасета/класса/признака)
+
 plt.figure(figsize=(12,10), dpi= 80)
 sns.heatmap(df.corr(), xticklabels=df.corr().columns, yticklabels=df.corr().columns, cmap='RdYlGn', center=0, annot=True)
 
@@ -34,7 +41,7 @@ plt.xticks(fontsize=10)
 plt.yticks(fontsize=10)
 plt.show()
 
-Преобразуйте категориальные признаки.
+#Преобразуйте категориальные признаки.
 
 selectedColumns = df[['Age', 'Workclass', 'ID', 'Education-num',
        'Marital-status', 'Occupation', 'Relationship', 'Race', 'Sex',
@@ -42,23 +49,18 @@ selectedColumns = df[['Age', 'Workclass', 'ID', 'Education-num',
 X = pd.get_dummies(selectedColumns)
 X.head()
 
-from sklearn.preprocessing import LabelEncoder
 le = LabelEncoder()
-
 le.fit( df['Class'])
 le.classes_
 le.transform( ['<=50K', '>50K'])
 y = pd.Series (data = le.transform(df['Class']))
 y.head()
 
-Разделите выборку на обучающее и тестовое подмножество. 80% данных оставить на обучающее множество, 20% на тестовое.
-
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import make_pipeline 
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split 
+#Разделите выборку на обучающее и тестовое подмножество. 80% данных оставить на обучающее множество, 20% на тестовое.
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+#Обучите модели логистической регрессии и опорных векторов на обучающем множестве. Для тестового множества предскажите уровень дохода и сравните с истинным значением, посчитав точность предсказания моделей. Для этого используйте встроенную функцию score.
 
 model = LogisticRegression()
 model.fit(X_train, y_train)
@@ -67,9 +69,8 @@ predictions = model.predict(X_test)
 model.score(X_train, y_train)
 model.score(X_test,y_test)
 
-from sklearn.svm import SVC
-
 clf = make_pipeline(StandardScaler(), SVC(gamma='auto')) 
 clf.fit(X_train, y_train)
 clf.score(X_train, y_train) 
 clf.score(X_test, y_test)
+
