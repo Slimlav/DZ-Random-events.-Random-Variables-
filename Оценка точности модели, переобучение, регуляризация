@@ -1,0 +1,112 @@
+## 1.Преобразуйте данные:
+# - проверьте наличие пропущенных значений. Преобразуйте/удалите пропуски по необходимости;
+# - закодируйте категориальные переменные числовыми значениями по необходимости.
+
+import pandas as pd
+import numpy as np
+import  matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import precision_recall_curve
+
+data = pd.read_csv('athletes.csv')
+data.head()
+
+data.info()
+
+data[ pd.isnull( data['height'] ) ].head()
+
+data.describe()
+
+df = data.replace({'height' : { np.NaN : '1.76'},'weight': { np.NaN : '72.0'}})
+df.info()
+
+selectedColumns = df[['nationality', 'dob', 'height', 'weight', 'sport',
+       'gold', 'silver', 'bronze']]
+X = pd.get_dummies(selectedColumns)
+X.head()
+
+le = LabelEncoder()
+
+le.fit( df['sex'])
+le.classes_
+le.transform( ['male', 'female'])
+y = pd.Series (data= le.transform(df['sex']))
+y.head()
+
+##2.Разделите выборку на обучающее (80% данных) и тестовое (20% данных) подмножества.
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+model = LogisticRegression()
+model.fit(X_train, y_train)
+predictions = model.predict_proba(X_test)
+y_score = predictions[:, 1]
+
+##3.Постройте ROC-кривую с помощью функции sklearn.metrics. roc_curve.
+
+fpr, tpr, thres = roc_curve( y_test, y_score )
+plt.plot(fpr, tpr, color='red', label='ROC')
+plt.plot([0, 1], [0, 1], color='green', linestyle='-')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic Curve')
+plt.legend()
+plt.show()
+
+##4.Вычислите значение ROC-AUC метрики с помощью функции sklearn.metrics.roc_auc_score.
+
+roc_auc_score( y_test, y_score  )
+
+##5.Реализуйте подсчет метрик TPR, FPR «вручную», без использования готовых функций из библиотеки sklearn
+
+y_=np.array(y_test)
+y_s=np.array(y_score)
+
+fpr1 = []
+tpr1 = []
+thresholds1 = np.arange(0.0, 1.01, .01)
+
+P = sum(y_)
+N = len(y_) - P
+
+for thresh in thresholds1:
+    FP=0
+    TP=0
+    for i in range(len(y_s)):
+        if (y_s[i] > thresh):
+            if y_[i] == 1:
+                TP = TP + 1
+            if y_[i] == 0:
+                FP = FP + 1
+    fpr1.append(FP/float(N))
+    tpr1.append(TP/float(P))
+    
+ ##6.Постройте ROC-кривую с помощью вычисленных в п. 5 метрик: объедините графики из п. 3 и п. 6 в один. Сравните, сделайте вывод.
+ 
+ plt.figure(figsize=(12, 12))
+plt.plot(fpr, tpr, color='red', label='ROC')
+plt.plot(fpr1, tpr1, color='blue', label='ROC_2')
+plt.plot([0, 1], [0, 1], color='green', linestyle='-')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic Curve')
+plt.legend()
+plt.show()
+
+##7.Постройте график Precision-Recall, используя метрики, посчитанные в п. 5.
+
+pr, re, thres = precision_recall_curve( y_,y_s )
+
+plt.figure(figsize=(8, 8))
+plt.plot(pr,re)
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision-Recall Curve')
+plt.grid()
+plt.xlim(0,1)
+plt.ylim(0,1)
+
+
