@@ -1,0 +1,268 @@
+##1.Получите данные и загрузите их в рабочую среду.
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import  matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import precision_recall_curve
+from sklearn import preprocessing
+from sklearn.datasets import fetch_california_housing
+
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
+
+california_housing = fetch_california_housing(as_frame=True)
+df = california_housing.frame
+df.head()
+
+##2.Проверьте данные на наличие пропусков. Удалите их в случае обнаружения.
+
+df.info()
+
+##3.Разделите выборку на обучающее и тестовое подмножества. 80% данных оставить на обучающее множество, 20% - на тестовое.
+
+df.columns
+X = df[['MedInc', 'HouseAge', 'AveRooms', 'AveBedrms', 'Population', 'AveOccup',
+       'Latitude', 'Longitude']]
+y = df['MedHouseVal']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+##4.Постройте модель линейной регрессии. Вычислите метрики RMSE, R2 на обучающем и тестовом множестве.
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+predictions_test = model.predict(X_test)
+predictions_train = model.predict(X_train)
+
+RMSE_test = mean_squared_error(y_test, predictions_test, squared=False)
+RMSE_train = mean_squared_error(y_train, predictions_train, squared=False)
+print('RMSE_test:',RMSE_test,'\nRMSE_train:',RMSE_train)
+R2_test = r2_score(y_test, predictions_test)
+R2_train = r2_score(y_train, predictions_train)
+print('R2_test:',R2_test,'\nR2_train:',R2_train)
+
+##5.Постройте график распределения целевой переменной. Сделайте вывод. Присутствуют ли в этом признаке выбросы?
+
+#в целевой переменной выбросов нет
+plt.hist(df['MedHouseVal'])
+plt.show()
+
+##6.Посчитайте и выведите корреляционную матрицу. Убедитесь, что ячейки матрицы поделены на цветные категории, в ячейках указано числовое значение корреляции.
+
+plt.figure(figsize=(14,12), dpi= 80)
+sns.heatmap(df.corr(), xticklabels=df.corr().columns, yticklabels=df.corr().columns, cmap='RdYlGn', center=0, annot=True)
+
+plt.title('Data correlation', fontsize=22)
+plt.xticks(fontsize=10)
+plt.yticks(fontsize=10)
+plt.show()
+
+
+1.Получите данные и загрузите их в рабочую среду.
+
+[ ]
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import  matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import precision_recall_curve
+from sklearn import preprocessing
+from sklearn.datasets import fetch_california_housing
+
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
+[ ]
+california_housing = fetch_california_housing(as_frame=True)
+df = california_housing.frame
+df.head()
+
+2.Проверьте данные на наличие пропусков. Удалите их в случае обнаружения.
+
+[ ]
+df.info()
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 20640 entries, 0 to 20639
+Data columns (total 9 columns):
+ #   Column       Non-Null Count  Dtype  
+---  ------       --------------  -----  
+ 0   MedInc       20640 non-null  float64
+ 1   HouseAge     20640 non-null  float64
+ 2   AveRooms     20640 non-null  float64
+ 3   AveBedrms    20640 non-null  float64
+ 4   Population   20640 non-null  float64
+ 5   AveOccup     20640 non-null  float64
+ 6   Latitude     20640 non-null  float64
+ 7   Longitude    20640 non-null  float64
+ 8   MedHouseVal  20640 non-null  float64
+dtypes: float64(9)
+memory usage: 1.4 MB
+3.Разделите выборку на обучающее и тестовое подмножества. 80% данных оставить на обучающее множество, 20% - на тестовое.
+
+[ ]
+df.columns
+Index(['MedInc', 'HouseAge', 'AveRooms', 'AveBedrms', 'Population', 'AveOccup',
+       'Latitude', 'Longitude', 'MedHouseVal'],
+      dtype='object')
+[ ]
+X = df[['MedInc', 'HouseAge', 'AveRooms', 'AveBedrms', 'Population', 'AveOccup',
+       'Latitude', 'Longitude']]
+y = df['MedHouseVal']
+[ ]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+4.Постройте модель линейной регрессии. Вычислите метрики RMSE, R2 на обучающем и тестовом множестве.
+
+[ ]
+model = LinearRegression()
+model.fit(X_train, y_train)
+predictions_test = model.predict(X_test)
+predictions_train = model.predict(X_train)
+[ ]
+RMSE_test = mean_squared_error(y_test, predictions_test, squared=False)
+RMSE_train = mean_squared_error(y_train, predictions_train, squared=False)
+print('RMSE_test:',RMSE_test,'\nRMSE_train:',RMSE_train)
+R2_test = r2_score(y_test, predictions_test)
+R2_train = r2_score(y_train, predictions_train)
+print('R2_test:',R2_test,'\nR2_train:',R2_train)
+RMSE_test: 0.7455813830127763 
+RMSE_train: 0.7196757085831575
+R2_test: 0.575787706032451 
+R2_train: 0.6125511913966952
+5.Постройте график распределения целевой переменной. Сделайте вывод. Присутствуют ли в этом признаке выбросы?
+
+[ ]
+#в целевой переменной выбросов нет
+plt.hist(df['MedHouseVal'])
+plt.show()
+
+6.Посчитайте и выведите корреляционную матрицу. Убедитесь, что ячейки матрицы поделены на цветные категории, в ячейках указано числовое значение корреляции.
+
+[ ]
+plt.figure(figsize=(14,12), dpi= 80)
+sns.heatmap(df.corr(), xticklabels=df.corr().columns, yticklabels=df.corr().columns, cmap='RdYlGn', center=0, annot=True)
+
+plt.title('Data correlation', fontsize=22)
+plt.xticks(fontsize=10)
+plt.yticks(fontsize=10)
+plt.show()
+
+##7.Сделайте выводы:
+#Сильная положительная корреляция AveRooms/AveBedrms
+#Сильная отрицательная корреляция Latitude/Longitude
+#В остальном без критичных значений
+
+##8.Удалите признаки на основании полученных значений, выводов.
+#Повторите п. 3, п. 4 на измененных данных.
+
+X1 = df[['MedInc', 'HouseAge', 'AveRooms', 'Population', 'AveOccup',
+       'Latitude']]
+y1 = df['MedHouseVal']
+X1_train, X1_test, y1_train, y1_test = train_test_split(X1, y1, test_size=0.2, random_state=42)
+model = LinearRegression()
+model.fit(X1_train, y1_train)
+predictions_test1 = model.predict(X1_test)
+predictions_train1 = model.predict(X1_train)
+
+RMSE_test1 = mean_squared_error(y1_test, predictions_test1, squared=False)
+RMSE_train1 = mean_squared_error(y1_train, predictions_train1, squared=False)
+print('RMSE_test:',RMSE_test1,'\nRMSE_train:',RMSE_train1)
+R2_test1 = r2_score(y1_test, predictions_test1)
+R2_train1 = r2_score(y1_train, predictions_train1)
+print('R2_test:',R2_test1,'\nR2_train:',R2_train1)
+
+##9.Исследуйте оставленные признаки на выбросы.
+#Удалите выбросы в случае обнаружения.
+#Повторите п. 3, п. 4 на измененных данных.
+
+df = df.drop(['AveBedrms','Longitude'], axis=1)
+df.shape
+numeric_col = ['MedInc', 'HouseAge', 'AveRooms',
+       'Latitude']
+df.boxplot(numeric_col)
+
+df = df[df['AveRooms']<80]
+
+numeric_col = ['AveOccup']
+df.boxplot(numeric_col)
+
+df = df[df['AveOccup']<200]
+
+numeric_col = ['Population']
+df.boxplot(numeric_col)
+
+df = df[df['Population']<20000]
+
+X2 = df[['MedInc', 'HouseAge', 'AveRooms', 'Population', 'AveOccup',
+       'Latitude']]
+y2 = df['MedHouseVal']
+X2_train, X2_test, y2_train, y2_test = train_test_split(X2, y2, test_size=0.2, random_state=42)
+model = LinearRegression()
+model.fit(X2_train, y2_train)
+predictions_test2 = model.predict(X2_test)
+predictions_train2 = model.predict(X2_train)
+
+RMSE_test2 = mean_squared_error(y2_test, predictions_test2, squared=False)
+RMSE_train2 = mean_squared_error(y2_train, predictions_train2, squared=False)
+print('RMSE_test:',RMSE_test2,'\nRMSE_train:',RMSE_train2)
+R2_test2 = r2_score(y2_test, predictions_test2)
+R2_train2 = r2_score(y2_train, predictions_train2)
+print('R2_test:',R2_test2,'\nR2_train:',R2_train2)
+
+##10.Измените несколько признаков на выбор математически. Например, вычислите логарифм, возведите в квадрат, извлеките квадратный корень.
+#Повторите п. 3, п. 4 на измененных данных.
+
+df['MedInc']=df['MedInc']**2
+df.head()
+
+X3 = df[['MedInc', 'HouseAge', 'AveRooms', 'Population', 'AveOccup',
+       'Latitude']]
+y3 = df['MedHouseVal']
+X3_train, X3_test, y3_train, y3_test = train_test_split(X3, y3, test_size=0.2, random_state=42)
+model = LinearRegression()
+model.fit(X3_train, y3_train)
+predictions_test3 = model.predict(X3_test)
+predictions_train3 = model.predict(X3_train)
+
+RMSE_test3 = mean_squared_error(y3_test, predictions_test3, squared=False)
+RMSE_train3 = mean_squared_error(y3_train, predictions_train3, squared=False)
+print('RMSE_test:',RMSE_test3,'\nRMSE_train:',RMSE_train3)
+R2_test3 = r2_score(y3_test, predictions_test3)
+R2_train3 = r2_score(y3_train, predictions_train3)
+print('R2_test:',R2_test3,'\nR2_train:',R2_train3)
+
+##11.Сравните метрики всех моделей.
+#Желательно оформление в виде таблицы вида |модель|RMSE|R2|признаки, на которых проводилось обучение с указанием их преобразований|.
+
+results = pd.DataFrame(columns=['Model','RMSE','R2','Features_and_their_transformation'])
+
+results.loc[len(results)] = ['RMSE_test',RMSE_test,R2_test,'Без изминений']
+results.loc[len(results)] = ['RMSE_train',RMSE_train,R2_train,'Без изминений']
+
+results.loc[len(results)] = ['RMSE_test1',RMSE_test1,R2_test1,'Удаление признаков AveBedrms,Longitude']
+results.loc[len(results)] = ['RMSE_train1',RMSE_train1,R2_train1,'Удаление признаков AveBedrms,Longitude']
+
+results.loc[len(results)] = ['RMSE_test2',RMSE_test2,R2_test2,'Ликвидация выбросов в признаках AveRooms, Population, AveOccup']
+results.loc[len(results)] = ['RMSE_train2',RMSE_train2,R2_train2,'Ликвидация выбросов в признаках AveRooms, Population, AveOccup']
+
+results.loc[len(results)] = ['RMSE_test3',RMSE_test3,R2_test3,'Признак MedInc**2']
+results.loc[len(results)] = ['RMSE_train3',RMSE_train3,R2_train3,'Признак MedInc**2']
+
+results
+
+##12.Сформулируйте выводы по проделанной работе.
+
+Кратко опишите какие преобразования были сделаны с данными.
+По очередно происходили изминения в частности: удалялись признаки,ликвидировались выбросы, математические изминения с признаками.
+Напишите свое мнение, в полной ли мере модели справились с поставленной задачей.
+Модель справилась не лучшим образом, проводимые изминения не дали ощутимого результата в метриках.
+
+
