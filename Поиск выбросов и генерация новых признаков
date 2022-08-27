@@ -1,0 +1,200 @@
+##1.Получите данные и загрузите их в рабочую среду
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn import preprocessing
+import sklearn.metrics
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.datasets import make_classification
+from sklearn.neighbors import LocalOutlierFactor
+from sklearn.svm import OneClassSVM
+from sklearn.ensemble import IsolationForest
+from numpy import quantile, where, random
+
+data=pd.read_csv('glass.csv')
+data.head()
+
+##2.Проведите первичный анализ.
+-Проверьте количество записей для каждого класса. Сделайте вывод.
+
+data.info()
+
+data['Type'].value_counts().sort_index(ascending=True)
+
+##3.Разделите выборку на обучающее и тестовое подмножество. 80% данных оставить на обучающее множество, 20% на тестовое.
+
+data.columns
+
+X = data[['RI', 'Na', 'Mg', 'Al', 'Si', 'K', 'Ca', 'Ba', 'Fe']]
+y = data['Type']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+##4.Обучите модель дерева решений RandomForestClassifier на обучающем множестве.
+
+clf = RandomForestClassifier(n_estimators=100)
+clf.fit(X_train, y_train)
+y_pred = clf.predict(X_test)
+
+##5.Для тестового множества предскажите тип стекла и сравните с истинным значением, посчитав точность предсказания модели (accuracy).
+
+sklearn.metrics.accuracy_score(y_test, y_pred)
+
+##6.Обработайте выбросы в данных.
+
+- Визуализируйте распределение значений для каждой переменной. Можно использовать функции sns.boxplot, sns.distplot. Есть ли признаки с нормальным распределением?
+- Исследуйте признаки на выбросы несколькими способами.
+- Удалите выбросы. *Посчитайте процент удаленных записей от общего числа записей для каждого класса.
+
+sns.set_theme(style="whitegrid")
+tips = sns.load_dataset("tips")
+plt.figure(figsize=(12,10))
+
+plt.subplot(2, 2, 1)
+ax = sns.boxplot(data['RI'])
+plt.subplot(2, 2, 2)
+ax = sns.histplot(data['RI'])
+
+df_updated = data[data['RI']<1.525]
+
+LOF = LocalOutlierFactor()
+df=pd.DataFrame(LOF.fit_predict(np.array(data[['RI']]))).merge(data['RI'], how='left', left_index=True, right_index=True)
+df.loc[df[0] != 1]
+
+sns.set_theme(style="whitegrid")
+tips = sns.load_dataset("tips")
+plt.figure(figsize=(12,10))
+
+plt.subplot(2, 2, 1)
+ax = sns.boxplot(data['Na'])
+plt.subplot(2, 2, 2)
+ax = sns.histplot(data['Na'])
+
+df_updated = df_updated[(df_updated['Na']<15.5) & (df_updated['Na']>12)]
+
+LOF = LocalOutlierFactor()
+df=pd.DataFrame(LOF.fit_predict(np.array(data[['Na']]))).merge(data['Na'], how='left', left_index=True, right_index=True)
+df.loc[df[0] != 1]
+
+sns.set_theme(style="whitegrid")
+tips = sns.load_dataset("tips")
+plt.figure(figsize=(12,10))
+
+plt.subplot(2, 2, 1)
+ax = sns.boxplot(data['Mg'])
+plt.subplot(2, 2, 2)
+ax = sns.histplot(data['Mg'])
+
+LOF = LocalOutlierFactor()
+df=pd.DataFrame(LOF.fit_predict(np.array(data[['Mg']]))).merge(data['Mg'], how='left', left_index=True, right_index=True)
+df.loc[df[0] != 1]
+
+sns.set_theme(style="whitegrid")
+tips = sns.load_dataset("tips")
+plt.figure(figsize=(12,10))
+
+plt.subplot(2, 2, 1)
+ax = sns.boxplot(data['Al'])
+plt.subplot(2, 2, 2)
+ax = sns.histplot(data['Al'])
+
+df_updated = df_updated[df_updated['Al']<3.2]
+
+LOF = LocalOutlierFactor()
+df=pd.DataFrame(LOF.fit_predict(np.array(data[['Al']]))).merge(data['Al'], how='left', left_index=True, right_index=True)
+df.loc[df[0] != 1]
+
+sns.set_theme(style="whitegrid")
+tips = sns.load_dataset("tips")
+plt.figure(figsize=(12,10))
+
+plt.subplot(2, 2, 1)
+ax = sns.boxplot(data['Si'])
+plt.subplot(2, 2, 2)
+ax = sns.histplot(data['Si'])
+
+df_updated = df_updated[(df_updated['Si']<74.5) & (df_updated['Si']>71)]
+
+LOF = LocalOutlierFactor()
+df=pd.DataFrame(LOF.fit_predict(np.array(data[['Si']]))).merge(data['Si'], how='left', left_index=True, right_index=True)
+df.loc[df[0] != 1]
+
+sns.set_theme(style="whitegrid")
+tips = sns.load_dataset("tips")
+plt.figure(figsize=(12,10))
+
+plt.subplot(2, 2, 1)
+ax = sns.boxplot(data['K'])
+plt.subplot(2, 2, 2)
+ax = sns.histplot(data['K'])
+
+df_updated = df_updated[df_updated['K']<0.95]
+
+LOF = LocalOutlierFactor()
+df=pd.DataFrame(LOF.fit_predict(np.array(data[['K']]))).merge(data['K'], how='left', left_index=True, right_index=True)
+df.loc[df[0] != 1]
+
+sns.set_theme(style="whitegrid")
+tips = sns.load_dataset("tips")
+plt.figure(figsize=(12,10))
+
+plt.subplot(2, 2, 1)
+ax = sns.boxplot(data['Ca'])
+plt.subplot(2, 2, 2)
+ax = sns.histplot(data['Ca'])
+
+df_updated = df_updated[(df_updated['Ca']<12) & (df_updated['Ca']>7.5)]
+
+LOF = LocalOutlierFactor()
+df=pd.DataFrame(LOF.fit_predict(np.array(data[['Ca']]))).merge(data['Ca'], how='left', left_index=True, right_index=True)
+df.loc[df[0] != 1]
+
+sns.set_theme(style="whitegrid")
+tips = sns.load_dataset("tips")
+plt.figure(figsize=(12,10))
+
+plt.subplot(2, 2, 1)
+ax = sns.boxplot(data['Ba'])
+plt.subplot(2, 2, 2)
+ax = sns.histplot(data['Ba'])
+
+df_updated = df_updated[df_updated['Ba']<0.5]
+
+LOF = LocalOutlierFactor()
+df=pd.DataFrame(LOF.fit_predict(np.array(data[['Ba']]))).merge(data['Ba'], how='left', left_index=True, right_index=True)
+df.loc[df[0] != 1]
+
+sns.set_theme(style="whitegrid")
+tips = sns.load_dataset("tips")
+plt.figure(figsize=(12,10))
+
+plt.subplot(2, 2, 1)
+ax = sns.boxplot(data['Fe'])
+plt.subplot(2, 2, 2)
+ax = sns.histplot(data['Fe'])
+
+df_updated = df_updated[df_updated['Fe']<0.5]
+
+LOF = LocalOutlierFactor()
+df=pd.DataFrame(LOF.fit_predict(np.array(data[['Fe']]))).merge(data['Fe'], how='left', left_index=True, right_index=True)
+df.loc[df[0] != 1]
+
+(df_updated['Type'].value_counts().sort_index(ascending=True))
+
+print('Процент удаленных записей от общего числа записей для каждого класса:','\n',(1-(df_updated['Type'].value_counts().sort_index(ascending=True))/(data['Type'].value_counts().sort_index(ascending=True)))*100)
+
+##7.Повторите п. 4, п. 5.
+X = df_updated[['RI', 'Na', 'Mg', 'Al', 'Si', 'K', 'Ca', 'Ba', 'Fe']]
+y = df_updated['Type']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+clf1 = RandomForestClassifier(n_estimators=100)
+clf1.fit(X_train, y_train)
+y_pred = clf.predict(X_test)
+
+sklearn.metrics.accuracy_score(y_test, y_pred)
