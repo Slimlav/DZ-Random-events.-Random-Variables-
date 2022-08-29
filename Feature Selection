@@ -1,0 +1,132 @@
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+from sklearn.linear_model import LinearRegression
+from sklearn import preprocessing
+import sklearn.metrics
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.datasets import make_classification
+from sklearn.neighbors import LocalOutlierFactor
+from sklearn.svm import OneClassSVM
+from sklearn.ensemble import IsolationForest
+
+from sklearn import datasets, linear_model
+from sklearn.model_selection import cross_val_score
+from sklearn.feature_selection import VarianceThreshold
+from sklearn.feature_selection import SelectKBest, chi2
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.feature_selection import SelectFromModel
+from sklearn.linear_model import LogisticRegression
+from sklearn.feature_selection import SequentialFeatureSelector
+from sklearn.neighbors import KNeighborsClassifier
+
+##1.Сгенерируйте данные с помощью кода:
+
+x_data_generated, y_data_generated = make_classification(scale=1)
+x = x_data_generated
+y = y_data_generated
+
+##2.Постройте модель логистической регрессии и оцените среднюю точность. Для этого используйте следующий код:
+
+cross_val_score(LogisticRegression(), x, y, scoring='accuracy').mean()
+
+##3.Используйте статистические методы для отбора признаков:
+#Выберите признаки на основе матрицы корреляции.
+
+Xx = pd.DataFrame(x)
+
+plt.figure(figsize=(14,12), dpi= 80)
+sns.heatmap(Xx.corr(), xticklabels=Xx.corr().columns, yticklabels=Xx.corr().columns, cmap='RdYlGn', center=0, annot=True)
+
+plt.title('Data correlation', fontsize=22)
+plt.xticks(fontsize=10)
+plt.yticks(fontsize=10)
+plt.show()
+
+#Отсеките низковариативные признаки (VarianceThreshold).
+
+selector = VarianceThreshold()
+selector.fit_transform(Xx)
+Xx = pd.DataFrame(Xx)
+Xx
+
+#Повторите п. 2 на отобранных признаках в п. 3a, п. 3b.
+
+Xx_accuracy=cross_val_score(LogisticRegression(), Xx, y, scoring='accuracy').mean()
+Xx_accuracy
+
+##4.Осуществите отбор признаков на основе дисперсионного анализа:
+#Выберите 5 лучших признаков с помощью скоринговой функции для классификации f_classif (SelectKBest(f_classif, k=5)).
+
+x.shape
+scaler = MinMaxScaler()
+X = scaler.fit_transform(x)
+X_new = SelectKBest(chi2, k=5).fit_transform(X, y)
+X_new.shape
+
+#Повторите п. 2 на отобранных признаках.
+
+X_new_accuracy=cross_val_score(LogisticRegression(), X_new, y, scoring='accuracy').mean()
+X_new_accuracy
+
+##5.Отбор с использованием моделей:
+#Реализуйте отбор признаков с помощью логистической регрессии. Отобранные признаки подайте далее на вход в саму логистическую регрессию (SelectFromModel). Используйте L1 регуляризацию.
+
+selector = SelectFromModel(estimator=LogisticRegression()).fit(x, y)
+selector.estimator_.coef_
+
+selector.threshold_
+
+selector.get_support()
+
+x1 = pd.DataFrame(selector.transform(x))
+
+#Реализуйте отбор признаков с помощью модели RandomForest и встроенного атрибута feature_impotance.
+
+model = RandomForestClassifier()
+model.fit(x1, y)
+
+importance = model.feature_importances_
+for i,v in enumerate(importance):
+	print('Feature: %0d Score: %.5f' % (i,v))
+  
+plt.figure(figsize=(10,6), dpi= 80)
+plt.bar([x for x in range(len(importance))], importance)
+plt.xticks([x for x in range(len(importance))], fontsize=10)
+plt.yticks(fontsize=10)
+plt.show()
+
+#Повторите п. 2 на отобранных признаках в п. 5a, п. 5b.
+
+x1_accuracy=cross_val_score(LogisticRegression(), x1, y, scoring='accuracy').mean()
+x1_accuracy
+
+#Перебор признаков: SequentialFeatureSelector. ,Повторите п. 2 на отобранных признаках.
+
+knn = KNeighborsClassifier(n_neighbors=10)
+sfs = SequentialFeatureSelector(knn, n_features_to_select=10)
+sfs.fit(x, y)
+SequentialFeatureSelector(estimator=KNeighborsClassifier(n_neighbors=10),n_features_to_select=5)
+sfs.get_support()
+x2=sfs.transform(x)
+x2.shape
+
+x2_accuracy=cross_val_score(LogisticRegression(), x2, y, scoring='accuracy').mean()
+x2_accuracy
+
+##6.Сформулируйте выводы по проделанной работе:
+#Сделайте таблицу вида |способ выбора признаков|количество признаков|средняя точность модели|.
+
+results = pd.DataFrame(columns=['Cпособ_выбора_признаков','Количество_признаков','Средняя_точность_модели'])
+
+results.loc[len(results)] = ['Матрица корреляции и кVarianceThreshold',Xx.shape[1],Xx_accuracy]
+results.loc[len(results)] = ['F_classif',X_new.shape[1],X_new_accuracy]
+results.loc[len(results)] = ['SelectFromModel и Feature_importances',x1.shape[1],x1_accuracy]
+results.loc[len(results)] = ['SequentialFeatureSelector',x2.shape[1],x2_accuracy]
+
+results
+
+
