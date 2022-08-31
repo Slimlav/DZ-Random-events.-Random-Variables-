@@ -1,0 +1,88 @@
+##1.Получите данные и загрузите их в рабочую среду
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn import preprocessing
+from sklearn.model_selection import cross_validate
+from sklearn.model_selection import GridSearchCV
+from sklearn.naive_bayes import BernoulliNB
+from scipy.stats import uniform
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import RandomizedSearchCV
+import numpy as np
+
+import warnings
+warnings.filterwarnings('ignore')
+
+data=pd.read_csv('heart.csv')
+data.head()
+
+##2.Подготовьте датасет к обучению моделей:
+#Категориальные переменные переведите в цифровые значения. Можно использовать pd.get_dummies, preprocessing.LabelEncoder. Старайтесь не использовать для этой задачи циклы.
+
+selectedColumns = data[['Age', 'Sex', 'ChestPainType', 'RestingBP', 'Cholesterol', 'FastingBS',
+       'RestingECG', 'MaxHR', 'ExerciseAngina', 'Oldpeak', 'ST_Slope','HeartDisease']]
+df_updated = pd.get_dummies(selectedColumns)
+
+##3.Разделите выборку на обучающее и тестовое подмножество. 80% данных оставить на обучающее множество, 20% на тестовое.
+
+X = df_updated.drop(['HeartDisease'],axis=1)
+y = df_updated['HeartDisease']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+##4.Обучите модель логистической регрессии с параметрами по умолчанию.
+
+scaler = preprocessing.StandardScaler().fit(X_train)
+X_scaled = scaler.transform(X_train)
+
+LR = LogisticRegression()
+LR.fit(X_scaled, y_train)
+
+##5.Подсчитайте основные метрики модели. Используйте следующие метрики и функцию: cross_validate(…, cv=10, scoring=[‘accuracy’,‘recall’,‘precision’,‘f1’])
+
+cross_validate(LogisticRegression(),X_scaled, y_train, cv=10, scoring=['accuracy','recall','precision','f1'])
+
+##6.Оптимизируйте 3-4 параметра модели:
+#Используйте GridSearchCV.
+#Используйте RandomizedSearchCV.
+#*Добавьте в п. 6b 2-5 моделей классификации и вариации их параметров.
+#Повторите п. 5 после каждого итогового изменения параметров.
+
+models = [
+    {'name':'NB','model': BernoulliNB(),'params':{'alpha':uniform(loc=0,scale=4)}},
+    {'name':'Lr','model': LogisticRegression(),'params':{'C':[0.1,0.2,0.3,0.5,0.7,1],'penalty':['l1','l2', 'elasticnet', 'none'],'tol': [0.000001,0.00001,0.0001,0.001,0.01,0.1,],'fit_intercept':[True,False] }},
+    {'name':'SVC','model': SVC(),'params':{'C':[0.1,0.2,0.3,0.5,0.7,1],'kernel':['linear', 'poly', 'rbf', 'sigmoid']}},
+    {'name':'RF','model': RandomForestClassifier(),'params':{'n_estimators': list(range(10, 301)), 'criterion':['gini', 'entropy', 'log_loss'],'max_depth': list(range(1, 30))}},
+    {'name':'KN','model': KNeighborsClassifier(),'params':{'n_neighbors': list(range(1, 30)),'weights':['uniform','distance'],'p':[1,2]}},
+    {'name':'DT','model': DecisionTreeClassifier(),'params':{'criterion':['gini', 'entropy', 'log_loss'],'max_depth': list(range(1, 30))}}
+]
+
+res=[]
+for v in models:
+  res.append((v['name'],RandomizedSearchCV(v['model'],v['params'],cv=10).fit(X_scaled, y_train)))
+  
+for r in res:
+  print(r[0],r[1].best_score_,r[1].best_params_)
+  
+  
+models = [
+    {'name':'NB','model': BernoulliNB(),'params':{'alpha':np.arange(0, 1, 0.1)}},
+    {'name':'Lr','model': LogisticRegression(),'params':{'C':[0.1,0.2,0.3,0.5,0.7,1],'penalty':['l1','l2', 'elasticnet', 'none'],'tol': [0.000001,0.00001,0.0001,0.001,0.01,0.1,],'fit_intercept':[True,False] }},
+    {'name':'SVC','model': SVC(),'params':{'C':[0.1,0.2,0.3,0.5,0.7,1],'kernel':['linear', 'poly', 'rbf', 'sigmoid']}},
+    #{'name':'RF','model': RandomForestClassifier(),'params':{'n_estimators': list(range(10, 200,10)), 'criterion':['gini', 'entropy', 'log_loss'],'max_depth': list(range(1, 10))}}
+    {'name':'KN','model': KNeighborsClassifier(),'params':{'n_neighbors': list(range(1, 30)),'weights':['uniform','distance'],'p':[1,2]}},
+    {'name':'DT','model': DecisionTreeClassifier(),'params':{'criterion':['gini', 'entropy', 'log_loss'],'max_depth': list(range(1, 30))}}
+]
+
+res=[]
+for v in models:
+  res.append((v['name'],GridSearchCV(v['model'],v['params'],cv=10).fit(X_scaled, y_train)))
+  
+for r in res:
+  print(r[0],r[1].best_score_,r[1].best_params_)
+  
+  
