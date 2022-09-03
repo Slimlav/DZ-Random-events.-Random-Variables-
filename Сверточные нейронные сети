@@ -1,0 +1,59 @@
+import tensorflow as tf
+from tqdm import tqdm_notebook
+import numpy as np
+from keras.datasets import cifar10
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+import keras
+from keras import layers as L
+from keras import backend as K
+from sklearn.metrics import accuracy_score
+%matplotlib inline
+
+(X_train, y_train), (X_test, y_test) = cifar10.load_data()
+X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=10**4, random_state=42)
+class_names = np.array(['airplane','automobile ','bird ','cat ','deer ','dog ','frog ','horse ','ship ','truck'])
+
+plt.figure(figsize=[12,10])
+for i in range(12):
+    plt.subplot(3, 4, i + 1)
+    plt.xlabel(class_names[y_train[i, 0]])
+    plt.imshow(X_train[i])
+    
+X_train = X_train / 255
+X_val = X_val / 255
+X_test = X_test / 255
+
+assert np.shape(X_train) == (40000, 32, 32, 3), "data shape should not change"
+assert 0.9 <= max(map(np.max, (X_train, X_val, X_test))) <= 1.05
+assert 0.0 <= min(map(np.min, (X_train, X_val, X_test))) <= 0.1
+assert len(np.unique(X_test / 255.)) > 10, "make sure you casted data to float type"
+
+model = tf.keras.models.Sequential()
+model.add(tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding="same", activation="relu", input_shape=[32, 32, 3]))
+model.add(tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding="same", activation="relu"))
+model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding='valid'))
+model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu"))
+model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu"))
+model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding='valid'))
+model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu"))
+model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu"))
+model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding='valid'))
+model.add(tf.keras.layers.Dropout(0.4))
+model.add(tf.keras.layers.Flatten())
+model.add(tf.keras.layers.Dense(units=128, activation='relu'))
+model.add(tf.keras.layers.Dense(units=10, activation='softmax'))
+
+my_callbacks = [
+    tf.keras.callbacks.EarlyStopping(patience=2)
+]
+
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+
+model.fit(X_train, y_train,epochs=50,callbacks=my_callbacks,validation_split=0.1)
+
+
+test_acc = accuracy_score(np.argmax(model.predict(X_test),axis=1),y_test)
+print("\n Test_acc =", test_acc)
