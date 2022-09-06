@@ -1,0 +1,51 @@
+##Задание. В этом задании нужно убедиться, что ЦПТ действительно работает.
+#Создайте случайную величину из любого выбранного вами распределения, для разных значений n сгенерируйте 1000 выборок размера n. Постройте гистрограммы средних этих выборок и сделайте выводы
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy.stats as sts
+%matplotlib inline
+
+rv = sts.moyal(loc=10,scale=2.5)
+sample = rv.rvs(size=1000)
+
+x = np.linspace(0,2,100)
+pdf = rv.pdf(x)
+plt.hist(sample, density=True, bins=30, label='sample histogram')
+plt.plot(x, pdf, label='theoretical pdf', alpha=0.5)
+plt.legend()
+plt.ylabel('fraction of samples, $f(x)$')
+plt.xlabel('$x$')
+plt.show()
+
+n1 = 2               # Размеры выборок 
+n2 = 12
+n3 = 70
+
+a1 = np.array([])     # Массивы для сохранения средних по выборкам
+a2 = np.array([])
+a3 = np.array([])
+
+samples_count = 1000  # Количество повторов генерации
+
+for number in range(samples_count): 
+    sample1 = rv.rvs(size=n1)               # На каждом цикле генерируем выборки указанных размеров
+    sample2 = rv.rvs(size=n2)
+    sample3 = rv.rvs(size=n3)  
+    a1 = np.append(a1, sample1.mean())      # Считаем среднее по каждой выборке и добавляем в массив средних
+    a2 = np.append(a2, sample2.mean())
+    a3 = np.append(a3, sample3.mean())
+    
+ label_1 = 'sample of ' + str(n1) + ' histogram'   # Подписи для графиков
+label_2 = 'sample of ' + str(n2) + ' histogram'
+label_3 = 'sample of ' + str(n3) + ' histogram'
+plt.hist(a1, density=True, label=label_1)         # Строим графики
+plt.hist(a2, density=True, label=label_2) 
+plt.hist(a3, density=True, label=label_3)
+
+plt.legend() 
+plt.ylabel('samples means')
+plt.xlabel('$x$')
+
+##Выводы: при увеличении n1>n2>n3 мы видим на графике четкий пик выбори, среднее значении более четко формируется и значение дисперсии уменьшается.
