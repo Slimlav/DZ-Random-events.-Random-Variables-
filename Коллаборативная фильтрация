@@ -1,0 +1,51 @@
+##ПАКЕТ SURPRISE
+#используйте данные MovieLens 1M
+#можно использовать любые модели из пакета
+#получите RMSE на тестовом сете 0.87 и ниже
+##Комментарий преподавателя :
+#В ДЗ на датасет 1М может не хватить RAM. Можно сделать на 100K. Качество RMSE предлагаю считать на основе CrossValidation (5 фолдов), а не отложенном датасете.
+
+pip install surprise
+from surprise import KNNWithMeans, KNNBasic
+from surprise import Dataset
+from surprise import accuracy
+from surprise import Reader
+from surprise.model_selection import train_test_split
+from surprise import SVD
+from surprise.model_selection import cross_validate
+
+import pandas as pd
+
+movies = pd.read_csv('movies.csv')
+ratings = pd.read_csv('ratings.csv')
+
+movies_with_ratings = movies.join(ratings.set_index('movieId'), on='movieId').reset_index(drop=True)
+movies_with_ratings.dropna(inplace=True)
+
+movies_with_ratings[movies_with_ratings.userId == 2.0].title.unique()
+
+dataset = pd.DataFrame({
+    'uid': movies_with_ratings.userId,
+    'iid': movies_with_ratings.title,
+    'rating': movies_with_ratings.rating
+})
+
+reader = Reader(rating_scale=(0.5, 5.0))
+data = Dataset.load_from_df(dataset, reader)
+
+trainset, testset = train_test_split(data, test_size=.15)
+
+algo = KNNWithMeans(k=20, sim_options={'name': 'pearson_baseline', 'user_based': True})
+algo.fit(trainset)
+
+test_pred = algo.test(testset)
+
+#KNNWithMeans
+accuracy.rmse(test_pred, verbose=True)
+
+#SVD
+svd = SVD(n_epochs=10,init_std_dev = 0.05,lr_all = 0.01)
+cross_validate(svd, data, measures=['RMSE'], cv=5, verbose = True)VD
+
+
+
